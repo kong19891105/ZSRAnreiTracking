@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鞘产品入院跟进 · ZSR鞘 / 安瑞鞘</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --ink:#152235; --ink2:#354764; --mute:#6E7E96;
+  --paper:#F2F4F8; --card:#FFFFFF; --line:#E1E5ED; --line2:#C8CFDB;
+  --blue:#2054E0; --blue-soft:#EDF3FF; --blue-line:#B2CBF8; --blue-hover:#1744BA;
+  --green:#0D7F56; --green-soft:#E8F5EF;
+  --red:#B8322B; --red-soft:#FAECEA;
+  --amber:#9E6200; --amber-soft:#FBF2E0;
+  --purple:#6B3FA0; --purple-soft:#F1ECF9;
+  --navy-bar:#172B45;
+  --shadow-sm:0 1px 2px rgba(21,34,53,.05),0 2px 8px rgba(21,34,53,.06);
+  --shadow-md:0 2px 6px rgba(21,34,53,.06),0 8px 24px rgba(21,34,53,.08);
+  --shadow-lg:0 8px 30px rgba(10,18,32,.12),0 2px 8px rgba(10,18,32,.06);
+  --r:12px; --r-sm:8px;
+  --num:"Bahnschrift","Segoe UI",system-ui,sans-serif;
+  --transition:180ms cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;background:var(--paper);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+::selection{background:rgba(32,84,224,.18);color:var(--ink)}
+button{font-family:inherit;cursor:pointer;transition:var(--transition)}
+input,select,textarea{font-family:inherit;font-size:inherit;color:var(--ink);transition:var(--transition)}
+.num{font-family:var(--num);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#C8CFDB;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#A0AAB8}
+
+/* app bar */
+.appbar{background:linear-gradient(135deg,var(--ink),#1A2E4A);color:#fff;display:flex;align-items:center;gap:18px;padding:0 24px;height:54px;position:sticky;top:0;z-index:50;box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 2px 12px rgba(0,0,0,.15)}
+.logo{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.logo b{font-size:16px;font-weight:700;letter-spacing:.02em}
+.logo span{font-size:11px;color:#8DA3C4;font-weight:500}
+.tabs{display:flex;gap:2px;height:100%}
+.tab{background:none;border:none;color:#A8BCD6;font-size:13.5px;padding:0 18px;height:100%;border-bottom:3px solid transparent;transition:color var(--transition),border-color var(--transition);font-weight:500}
+.tab:hover{color:#E8F0FF}
+.tab.on{color:#fff;border-bottom-color:#5B8DEF;font-weight:600}
+.bar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.sync-badge{font-size:11px;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.1);color:#C4D5ED;white-space:nowrap;border:1px solid rgba(255,255,255,.08)}
+.sync-badge.live{background:rgba(46,160,109,.2);color:#8FE8BF;border-color:rgba(46,160,109,.3)}
+.icon-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#D8E5F8;border-radius:var(--r-sm);padding:5px 12px;font-size:12px;transition:background var(--transition)}
+.icon-btn:hover{background:rgba(255,255,255,.16)}
+.icon-btn:active{background:rgba(255,255,255,.22);transform:scale(.97)}
+
+/* context bar */
+.ctxbar{background:var(--navy-bar);color:#CDD8EB;display:flex;align-items:center;gap:22px;padding:8px 24px;font-size:12px;position:sticky;top:54px;z-index:49;flex-wrap:wrap;min-height:44px;box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+.ctx-cycle{font-weight:700;color:#fff;font-size:13px;white-space:nowrap}
+.ctx-legend{color:#879CBD;white-space:nowrap}
+.ctx-kpis{margin-left:auto;display:flex;gap:24px;align-items:center}
+.ctx-kpi{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15}
+.ctx-kpi small{color:#879CBD;font-size:10px;font-weight:500}
+.ctx-kpi b{font-family:var(--num);font-size:15px;color:#fff}
+
+/* layout */
+main{max-width:1560px;margin:0 auto;padding:20px 24px 64px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);margin-bottom:18px;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-md)}
+.card-h{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card-h h3,.card-h b{font-size:14px;font-weight:700;color:var(--ink)}
+.card-h .hint{font-size:12px;color:var(--mute);font-weight:400}
+.card-b{padding:16px 18px}
+.empty{padding:56px 20px;text-align:center;color:var(--mute)}
+.empty b{display:block;font-size:16px;color:var(--ink2);margin-bottom:8px;font-weight:600}
+
+/* controls */
+.btn{border:1px solid var(--line2);background:#fff;border-radius:var(--r-sm);padding:7px 16px;font-size:13px;color:var(--ink2);transition:all var(--transition);font-weight:500}
+.btn:hover{border-color:var(--blue);color:var(--blue);background:#FAFCFF}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.btn.pri:hover{background:var(--blue-hover);border-color:var(--blue-hover);box-shadow:0 2px 8px rgba(32,84,224,.25)}
+.btn.danger{color:var(--red);border-color:#E2BEBA}
+.btn.danger:hover{background:var(--red-soft);border-color:var(--red)}
+.btn.sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+select.ctrl,input.ctrl{border:1px solid var(--line2);border-radius:var(--r-sm);padding:7px 10px;font-size:13px;background:#fff;outline:none}
+select.ctrl:focus,input.ctrl:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(32,84,224,.12)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:var(--r-sm);overflow:hidden}
+.seg button{border:none;background:#fff;padding:6px 14px;font-size:12.5px;color:var(--ink2);border-right:1px solid var(--line);transition:all var(--transition);font-weight:500}
+.seg button:last-child{border-right:none}
+.seg button:hover{background:#F6F8FC}
+.seg button.on{background:var(--ink);color:#fff;font-weight:600}
+.lbl{font-size:11.5px;color:var(--mute);font-weight:600;margin-bottom:4px}
+.toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:12px 16px 14px}
+
+/* tables */
+.twrap{overflow:auto;max-height:74vh;border-radius:0 0 var(--r) var(--r)}
+.twrap::-webkit-scrollbar-track{background:var(--card)}
+table.dt{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;white-space:nowrap}
+.dt thead tr{position:sticky;top:0;z-index:5}
+.dt th{position:sticky;top:0;background:#EBEEF5;color:var(--ink2);font-weight:700;font-size:11px;padding:8px 10px;border-bottom:2px solid var(--line2);text-align:right;z-index:3;letter-spacing:.02em}
+.dt th.l,.dt td.l{text-align:left}
+.dt th.c,.dt td.c{text-align:center}
+.dt td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:right;background:#fff;transition:background .12s}
+.dt tr:nth-child(even) td{background:#FAFBFD}
+.dt tr:hover td{background:#F0F4FC}
+.dt .stick1{position:sticky;left:0;z-index:2;border-right:2px solid var(--line)}
+.dt th.stick1{z-index:6}
+.dt .total-row td{background:#E8ECF3;font-weight:700;border-top:2px solid var(--line2);position:sticky;bottom:0;z-index:2}
+.dt td.dim{color:var(--mute)}
+.dt th,.dt td{border-right:1px solid var(--line)}
+.dt th:last-child,.dt td:last-child{border-right:none}
+td.pos,.pos{color:var(--green);font-weight:600}
+td.neg,.neg{color:var(--red);font-weight:600}
+td.warn,.warn{color:var(--amber);font-weight:600}
+
+/* resizable */
+.resize-handle{position:absolute;right:0;top:0;bottom:0;width:7px;cursor:col-resize;z-index:7;touch-action:none}
+.resize-handle::after{content:"";position:absolute;right:2px;top:0;bottom:0;width:2px;border-radius:2px}
+.resize-handle:hover::after,.resize-handle.dragging::after{background:var(--blue)}
+.dt th{position:relative}
+table.rz-fixed{table-layout:fixed}
+.rz-fixed th,.rz-fixed td{overflow:hidden;text-overflow:ellipsis}
+.rz-fixed .cell-in,.rz-fixed .cell-sel{width:100%;min-width:0}
+body.col-resizing{cursor:col-resize !important}
+body.col-resizing *{user-select:none !important}
+.dt th.sortable{cursor:pointer;user-select:none}
+.dt th.sortable:hover{background:#DFE6F3}
+.sort-ico{display:inline-block;margin-left:4px;font-size:9px;color:#AAB6C9;vertical-align:1px}
+.dt th.sorted{color:var(--blue)}
+.dt th.sorted .sort-ico{color:var(--blue)}
+
+/* inputs in cells */
+.cell-sel{border:1px solid var(--line2);border-radius:6px;padding:5px 7px;font-size:12px;background:#fff;outline:none;min-width:118px}
+.cell-sel:hover{border-color:var(--blue)}
+.cell-sel:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(32,84,224,.12)}
+.cell-sel.set{border-color:var(--blue-line);background:var(--blue-soft);color:var(--blue);font-weight:600}
+.cell-in{width:170px;border:1px solid var(--line2);border-radius:6px;padding:5px 8px;font-size:12px;outline:none}
+.cell-in:hover{border-color:var(--blue)}
+.cell-in:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(32,84,224,.12)}
+.cell-in[disabled],.cell-sel[disabled]{background:#F4F6FA;color:var(--mute);cursor:not-allowed}
+
+/* tags & pills */
+.tag{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:4px;background:#EDF1F7;color:var(--ink2);font-weight:600;letter-spacing:.01em}
+.tag.signed{background:var(--purple-soft);color:var(--purple)}
+.tag.unsigned{background:#EEF1F6;color:var(--mute)}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px}
+.pill.lin{background:var(--amber-soft);color:var(--amber)}
+.pill.up{background:var(--green-soft);color:var(--green)}
+.pill.noup{background:#EEF1F6;color:var(--mute)}
+.pill.none{color:var(--mute);background:transparent;font-weight:500}
+.cmp{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px}
+.cmp.adv{background:var(--green-soft);color:var(--green)}
+.cmp.keep{background:#EEF1F6;color:var(--ink2)}
+.cmp.back{background:var(--red-soft);color:var(--red)}
+.cmp.dash{color:var(--mute);background:transparent;font-weight:500}
+
+/* progress bar */
+.pbar{display:inline-flex;align-items:center;gap:8px}
+.pbar-track{width:84px;height:7px;border-radius:99px;background:#E6EBF3;overflow:hidden;position:relative}
+.pbar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#4B7ED9,#2A9E6A);transition:width .4s}
+.pbar-num{font-family:var(--num);font-size:11.5px;font-weight:700;color:var(--ink2);min-width:34px;text-align:right}
+
+/* dashboard stage stacked bar */
+.stbar{display:flex;height:18px;border-radius:5px;overflow:hidden;background:#EEF1F6;min-width:150px}
+.stbar i{display:block;height:100%}
+.st-leg{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:11px;color:var(--ink2);padding:6px 2px 0}
+.st-leg span{display:inline-flex;align-items:center;gap:5px}
+.st-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* KPI cards */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:16px 18px}
+.kpi{border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;background:linear-gradient(180deg,#FBFCFE,#F6F9FD)}
+.kpi small{display:block;font-size:11px;color:var(--mute);font-weight:600;margin-bottom:4px}
+.kpi b{font-family:var(--num);font-size:22px;color:var(--ink);font-weight:700}
+.kpi .sub{font-size:11px;color:var(--mute);font-weight:500;margin-left:6px}
+
+/* multi-select dropdown */
+.ms-wrap{position:relative;display:inline-block;vertical-align:middle}
+.ms-trigger{border:1px solid var(--line2);border-radius:var(--r-sm);padding:6px 10px;background:#fff;cursor:pointer;font-size:13px;min-width:120px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--ink2);user-select:none;transition:all var(--transition)}
+.ms-trigger:hover{border-color:var(--blue)}
+.ms-trigger::after{content:"▼";font-size:9px;color:var(--mute);transition:transform var(--transition)}
+.ms-wrap.open .ms-trigger::after{transform:rotate(180deg)}
+.ms-panel{position:absolute;top:calc(100% + 4px);left:0;z-index:30;background:#fff;border:1px solid var(--line2);border-radius:var(--r-sm);box-shadow:var(--shadow-lg);max-height:300px;overflow-y:auto;min-width:200px;display:none;padding:6px 0}
+.ms-wrap.open .ms-panel{display:block}
+.ms-panel label{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:12.5px;cursor:pointer;white-space:nowrap;color:var(--ink2)}
+.ms-panel label:hover{background:var(--blue-soft)}
+.ms-panel input[type=checkbox]{margin:0;width:14px;height:14px;accent-color:var(--blue)}
+.ms-panel .ms-all{border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:5px;font-weight:700}
+.ms-panel label:has(input:checked){background:var(--blue-soft);color:var(--blue);font-weight:600}
+.ms-trigger-txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms-wrap.active .ms-trigger{border-color:var(--blue);color:var(--blue);font-weight:600;box-shadow:0 0 0 2px rgba(32,84,224,.10)}
+
+.drillbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:9px 16px 11px;border-top:1px solid var(--line);background:linear-gradient(180deg,#FBFCFE,#F5F8FC)}
+.drillbar-lab{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--mute);text-transform:uppercase;margin-right:2px;white-space:nowrap}
+.drillbar-sp{flex:1 1 12px}
+.drillbar-count{font-size:11.5px;color:var(--blue);font-weight:600;white-space:nowrap}
+
+/* modal */
+.mask{position:fixed;inset:0;background:rgba(10,16,28,.5);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:6vh 16px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.mask.show{display:flex}
+.modal{background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 24px 80px rgba(10,18,32,.25),0 4px 16px rgba(10,18,32,.1)}
+.modal-h{padding:18px 22px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.modal-h b{font-size:16px}
+.modal-b{padding:18px 22px}
+.modal-f{padding:14px 22px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.id-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:6px}
+.id-card{border:1px solid var(--line2);border-radius:var(--r-sm);padding:12px;cursor:pointer;text-align:center;transition:all var(--transition);font-size:13px;font-weight:600;color:var(--ink2);background:#fff}
+.id-card:hover{border-color:var(--blue);background:#FAFCFF}
+.id-card.on{border-color:var(--blue);background:var(--blue-soft);color:var(--blue);box-shadow:0 0 0 2px rgba(32,84,224,.12)}
+.id-card small{display:block;font-weight:400;color:var(--mute);font-size:11px;margin-top:3px}
+textarea.ctrl{border:1px solid var(--line2);border-radius:var(--r-sm);padding:9px 11px;font-size:13px;background:#fff;outline:none;width:100%;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.5}
+textarea.ctrl:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(32,84,224,.12)}
+
+/* toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 24px;border-radius:99px;font-size:13px;box-shadow:var(--shadow-lg);z-index:200;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+/* watermark */
+.watermark{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}
+.watermark span{position:absolute;display:block;font-size:13px;color:rgba(160,175,200,.12);font-weight:600;transform:rotate(-30deg);white-space:nowrap;user-select:none;letter-spacing:.04em}
+
+@media (max-width:860px){
+  .appbar{flex-wrap:wrap;height:auto;padding:8px 14px}
+  .tabs{order:3;width:100%;overflow-x:auto;height:42px;gap:0}
+  .tab{padding:0 12px;font-size:13px;flex:1 0 auto}
+  main{padding:14px 12px 60px}
+  .ctx-kpis{width:100%;margin-left:0;justify-content:space-between;gap:12px}
+  /* 手机填写优化 */
+  .twrap{max-height:calc(100vh - 200px);border-radius:0 0 var(--r) var(--r);-webkit-overflow-scrolling:touch}
+  .cell-sel,.cell-in{padding:8px 10px;font-size:13px;min-height:38px;border-radius:8px}
+  .cell-sel{min-width:130px}
+  .cell-in{width:100%;min-width:120px}
+  .dt th,.dt td{padding:8px 8px;font-size:13px}
+  .dt th{font-size:11px}
+  .toolbar{gap:10px;padding:10px 12px}
+  .card-h{padding:12px 14px}
+  .card-b{padding:12px 14px}
+  .modal{max-height:92vh;border-radius:12px}
+  .modal-h,.modal-b,.modal-f{padding-left:16px;padding-right:16px}
+  .pbar-track{width:60px}
+  .pbar-num{min-width:28px}
+  /* 触控优化 */
+  select.cell-sel, input.cell-in, .ctrl{-webkit-appearance:none;appearance:none}
+  select.cell-sel, input.cell-in{touch-action:manipulation}
+}
+</style>
+</head>
+<body>
+
+<div class="watermark" id="watermark"></div>
+
+<header class="appbar">
+  <div class="logo"><b>入院跟进</b><span>ZSR鞘 · 安瑞鞘</span></div>
+  <nav class="tabs">
+    <button class="tab on" data-tab="fill">✏️ 填写跟进</button>
+    <button class="tab" data-tab="dash">📊 入院看板</button>
+    <button class="tab" data-tab="admin">⚙️ 管理后台</button>
+  </nav>
+  <div class="bar-right">
+    <button class="icon-btn" id="btn-me" title="切换身份 / 可见范围">👤 选择身份</button>
+    <button class="icon-btn" id="btn-help" title="使用说明">📖 说明</button>
+    <span class="sync-badge" id="sync-badge">本地模式</span>
+    <button class="icon-btn" id="btn-refresh" title="刷新">🔄 刷新</button>
+  </div>
+</header>
+
+<div class="ctxbar" id="ctxbar">
+  <span class="ctx-cycle" id="ctx-cycle">尚未导入数据</span>
+  <span class="ctx-legend" id="ctx-scope"></span>
+  <div class="ctx-kpis" id="ctx-kpis"></div>
+</div>
+
+<main>
+  <section id="tab-fill"></section>
+  <section id="tab-dash" style="display:none"></section>
+  <section id="tab-admin" style="display:none"></section>
+</main>
+
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="file-xlsx" accept=".xlsx,.xls,.csv" style="display:none">
+
+<script>
+"use strict";
+/* =====================================================================
+   鞘产品入院跟进工具 — 单文件应用 (参考「预估收集」项目风格)
+   运行模式: ① Claude Artifact 共享存储  ② 本地 HTML(localStorage)  ③ 内存兜底
+   ===================================================================== */
+
+/* ---------- helpers ---------- */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => { if (v === null || v === undefined || v === "") return 0; const n = typeof v === "number" ? v : parseFloat(String(v).replace(/,/g,"")); return isFinite(n) ? n : 0; };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const fmtPct = v => (v === null || v === undefined || !isFinite(v)) ? "–" : (v*100).toFixed(0) + "%";
+const fmtN = v => (v === null || !isFinite(v)) ? "–" : (Math.round(v*10)/10).toLocaleString("en-US");
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2400); }
+
+/* ---------- 阶段定义 ---------- */
+// 未签约医院: 6 步 (1-5 有进度百分比, 6=临采 显示"临采")
+const STEP_UNSIGNED = [
+  { v:1, label:"1. 意向",   pct:0.2 },
+  { v:2, label:"2. 已试用", pct:0.4 },
+  { v:3, label:"3. 已提单", pct:0.6 },
+  { v:4, label:"4. 已过会", pct:0.8 },
+  { v:5, label:"5. 已入院", pct:1.0 },
+  { v:6, label:"6. 临采",   pct:null }
+];
+// 签约医院: 2 步, 不显示百分比进度
+const STEP_SIGNED = [
+  { v:1, label:"1. 未上量" },
+  { v:2, label:"2. 已经上量" }
+];
+const EQUIP_OPTS = ["1. 医院购买", "2. 代理商轮转", "3. 暂无设备"];
+// 看板阶段配色 (未签约阶段)
+const STAGE_COLORS = { 1:"#C8D4EA", 2:"#9FB8E0", 3:"#6E93D6", 4:"#3F6FCC", 5:"#0D7F56", 6:"#9E6200", up:"#0D7F56", noup:"#C8CFDB", none:"#EEF1F6" };
+
+function stepDefs(signed){ return signed ? STEP_SIGNED : STEP_UNSIGNED; }
+function stepInfo(signed, v){ return stepDefs(signed).find(s => s.v === v) || null; }
+// 进度百分比: 未签约 1-5 有值; 临采(6)与签约一律 null
+function progPct(signed, v){ if (signed || !v) return null; const s = stepInfo(false, v); return s ? s.pct : null; }
+// 是否已入院/在用: 未签约 已入院(5)或临采(6); 签约 已上量(2)
+function isEntered(signed, v){ return signed ? v >= 2 : v >= 5; }
+
+/* =================== 存储适配层 =================== */
+const Store = {
+  shared:false, mem:{}, ls:null,
+  async init(){
+    try { if (window.storage && typeof window.storage.get === "function"){ await window.storage.list("zsr-", true); this.shared = true; } } catch(e){ this.shared = false; }
+    if (!this.shared){ try { const t="__zsr_t__"; localStorage.setItem(t,"1"); localStorage.removeItem(t); this.ls = localStorage; } catch(e){ this.ls = null; } }
+  },
+  async get(k){
+    if (this.shared){ try { const r = await window.storage.get(k, true); return r && r.value != null ? JSON.parse(r.value) : null; } catch(e){ return null; } }
+    if (this.ls){ try { const v = this.ls.getItem("zsr1:"+k); return v == null ? null : JSON.parse(v); } catch(e){ return null; } }
+    return this.mem[k] !== undefined ? this.mem[k] : null;
+  },
+  async set(k,v){
+    if (this.shared){ try { const r = await window.storage.set(k, JSON.stringify(v), true); return !!r; } catch(e){ toast("⚠ 共享存储写入失败"); return false; } }
+    if (this.ls){ try { this.ls.setItem("zsr1:"+k, JSON.stringify(v)); return true; } catch(e){ toast("⚠ 本地存储写入失败(空间可能已满)"); return false; } }
+    this.mem[k] = JSON.parse(JSON.stringify(v)); return true;
+  },
+  async pget(k){
+    if (this.shared){ try { const r = await window.storage.get(k, false); return r && r.value != null ? JSON.parse(r.value) : null; } catch(e){ return null; } }
+    if (this.ls){ try { const v = this.ls.getItem("zsr1p:"+k); return v == null ? null : JSON.parse(v); } catch(e){ return null; } }
+    return this.mem["p:"+k] !== undefined ? this.mem["p:"+k] : null;
+  },
+  async pset(k,v){
+    if (this.shared){ try { const r = await window.storage.set(k, JSON.stringify(v), false); return !!r; } catch(e){ return false; } }
+    if (this.ls){ try { this.ls.setItem("zsr1p:"+k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+    this.mem["p:"+k] = JSON.parse(JSON.stringify(v)); return true;
+  }
+};
+
+/* =================== 全局状态 =================== */
+const S = {
+  tab:"fill",
+  base:[],            // 导入的医院×产品基础记录
+  baseMeta:null,      // {importedAt, count}
+  fill:{},            // key -> {step, equip, blocker, note, updatedBy, updatedAt}
+  versions:[],        // 版本快照 [{id,label,ts,data:{key:{step,...}}}]
+  me:null,            // {role, region, manager, rep}
+  // 各页筛选
+  fFilter:{ region:"", manager:"", rep:"", province:"", product:"", status:"", q:"" },
+  fSort:null,
+  dash:{ dim:"product", drill:{}, sort:null },
+  _colW:{},
+  fillColVis:{ region:false, manager:true, rep:false, province:false, hosp:true, product:true, status:true, cv:false, fv:false, step:true, pct:true, cmp:true, equip:true, blocker:true, note:true }
+};
+
+const rowKey = r => r.hospCode + "|" + r.product;
+
+/* =================== 示例数据(管理员可清空后导入真实数据) =================== */
+function sampleBase(){
+  const R = "段文";
+  const mk = (mgr, rep, prov, name, code, products) => products.map(p => ({
+    region:R, manager:mgr, rep, province:prov, hospName:name, hospCode:code,
+    contracted:p.s, product:p.p, contractVol:p.c, freeVol:p.f
+  }));
+  let out = [];
+  out = out.concat(mk("廖斌","韩晴晴","北京市","首都医科大学附属北京友谊医院","H000014",[{p:"Anrei负压鞘",s:false,c:0,f:20},{p:"ZSR测压鞘",s:false,c:0,f:100}]));
+  out = out.concat(mk("廖斌","王婉姝","北京市","首都医科大学宣武医院","H000015",[{p:"Anrei负压鞘",s:false,c:0,f:0},{p:"ZSR测压鞘",s:false,c:0,f:0}]));
+  out = out.concat(mk("廖斌","张璇","北京市","北京大学人民医院","H000023",[{p:"Anrei负压鞘",s:true,c:464,f:10},{p:"ZSR测压鞘",s:false,c:0,f:100}]));
+  out = out.concat(mk("廖斌","任杨娇子","北京市","中国医学科学院北京协和医院东院","H000035",[{p:"Anrei负压鞘",s:true,c:2,f:2},{p:"ZSR测压鞘",s:false,c:0,f:0}]));
+  out = out.concat(mk("廖斌","张璇","北京市","北京大学第三医院","H000038",[{p:"Anrei负压鞘",s:false,c:0,f:0},{p:"ZSR测压鞘",s:true,c:25,f:0}]));
+  out = out.concat(mk("廖斌","王婉姝","北京市","北京医院","H000061",[{p:"Anrei负压鞘",s:false,c:0,f:0},{p:"ZSR测压鞘",s:false,c:0,f:80}]));
+  out = out.concat(mk("廖斌","张璇","北京市","首都医科大学附属北京同仁医院","H000065",[{p:"Anrei负压鞘",s:false,c:0,f:0},{p:"ZSR测压鞘",s:false,c:0,f:100}]));
+  out = out.concat(mk("廖斌","王婉姝","北京市","中国中医科学院西苑医院","H000185",[{p:"Anrei负压鞘",s:true,c:30,f:5},{p:"ZSR测压鞘",s:false,c:0,f:0}]));
+  out = out.concat(mk("宋亚坤","赵磊","山东省","山东大学齐鲁医院","H000301",[{p:"Anrei负压鞘",s:true,c:120,f:30},{p:"ZSR测压鞘",s:false,c:0,f:60}]));
+  out = out.concat(mk("宋亚坤","赵磊","山东省","青岛大学附属医院","H000302",[{p:"Anrei负压鞘",s:false,c:0,f:40},{p:"ZSR测压鞘",s:false,c:0,f:40}]));
+  out = out.concat(mk("宋亚坤","孙倩","山东省","山东省立医院","H000305",[{p:"Anrei负压鞘",s:false,c:0,f:25},{p:"ZSR测压鞘",s:true,c:18,f:0}]));
+  // 第二个大区(便于看板 by大区 展示)
+  out = out.concat(mk("陈航","周敏","上海市","复旦大学附属中山医院","H000501",[{p:"Anrei负压鞘",s:true,c:220,f:40},{p:"ZSR测压鞘",s:false,c:0,f:120}]).map(x=>(x.region="华东",x)));
+  out = out.concat(mk("陈航","周敏","上海市","上海交通大学医学院附属瑞金医院","H000502",[{p:"Anrei负压鞘",s:false,c:0,f:80},{p:"ZSR测压鞘",s:false,c:0,f:90}]).map(x=>(x.region="华东",x)));
+  out = out.concat(mk("陈航","林涛","江苏省","江苏省人民医院","H000510",[{p:"Anrei负压鞘",s:false,c:0,f:55},{p:"ZSR测压鞘",s:false,c:0,f:30}]).map(x=>(x.region="华东",x)));
+  return out;
+}
+// 示例当前填写
+function sampleFill(base){
+  const by = "示例数据";
+  const set = {};
+  const put = (code, prod, step, equip, blocker, note) => { set[code+"|"+prod] = { step, equip:equip||"", blocker:blocker||"", note:note||"", updatedBy:by, updatedAt:Date.now() }; };
+  put("H000014","Anrei负压鞘",2,"1. 医院购买","需进药事会","主任有意向");
+  put("H000014","ZSR测压鞘",1,"2. 代理商轮转","","");
+  put("H000023","Anrei负压鞘",2,"1. 医院购买","","已签约,推动上量中");
+  put("H000023","ZSR测压鞘",3,"","等待提单流程","");
+  put("H000038","ZSR测压鞘",2,"1. 医院购买","","已签约未上量");
+  put("H000065","ZSR测压鞘",4,"3. 暂无设备","设备未到位","已过会,待设备");
+  put("H000061","ZSR测压鞘",5,"1. 医院购买","","已入院");
+  put("H000185","Anrei负压鞘",1,"","主任更换需重新对接","");
+  put("H000301","Anrei负压鞘",2,"1. 医院购买","","签约且已上量");
+  put("H000302","Anrei负压鞘",6,"2. 代理商轮转","","通过临采进入");
+  put("H000501","Anrei负压鞘",2,"1. 医院购买","","");
+  put("H000510","Anrei负压鞘",3,"3. 暂无设备","设备缺口","");
+  return set;
+}
+// 示例「上个版本」(进度略低,用于演示 有进展/保持/倒退)
+function samplePrevVersion(){
+  const d = {};
+  const put = (code, prod, step) => d[code+"|"+prod] = { step };
+  put("H000014","Anrei负压鞘",1);  // 现2 -> 有进展
+  put("H000014","ZSR测压鞘",1);    // 现1 -> 保持
+  put("H000023","Anrei负压鞘",2);  // 现2 -> 保持
+  put("H000023","ZSR测压鞘",4);    // 现3 -> 倒退
+  put("H000065","ZSR测压鞘",2);    // 现4 -> 有进展
+  put("H000301","Anrei负压鞘",1);  // 现2 -> 有进展
+  put("H000302","Anrei负压鞘",6);  // 现6 -> 保持
+  return { id:uid(), label:"上一版本(示例)", ts:Date.now()-86400000*7, data:d };
+}
+
+/* =================== 数据读写 =================== */
+async function loadAll(){
+  const base = await Store.get("zsr-base");
+  if (base && base.rows){ S.base = base.rows; S.baseMeta = base.meta || null; }
+  S.fill = (await Store.get("zsr-fill")) || {};
+  S.versions = (await Store.get("zsr-versions")) || [];
+  S.passwords = (await Store.get("zsr-passwords")) || {};
+  S.fillColVis = (await Store.get("zsr-colvis")) || S.fillColVis;
+  S.me = await Store.pget("zsr-me");
+  // 首次运行: 载入示例
+  if (!S.base.length && !base){
+    S.base = sampleBase();
+    S.baseMeta = { importedAt:Date.now(), count:S.base.length, sample:true };
+    S.fill = sampleFill(S.base);
+    S.versions = [samplePrevVersion()];
+    await saveBase(); await saveFill(); await saveVersions();
+  }
+}
+async function saveBase(){ await Store.set("zsr-base", { rows:S.base, meta:S.baseMeta }); }
+async function saveFill(){ await Store.set("zsr-fill", S.fill); }
+async function saveVersions(){ await Store.set("zsr-versions", S.versions); }
+async function savePasswords(){ await Store.set("zsr-passwords", S.passwords); }
+
+const baseIndex = () => { const m = new Map(); for (const r of S.base) m.set(rowKey(r), r); return m; };
+
+/* 合并基础数据 + 当前填写, 生成完整行 */
+function buildRows(){
+  return S.base.map(r => {
+    const k = rowKey(r);
+    const f = S.fill[k] || {};
+    const step = f.step || 0;
+    return {
+      ...r, key:k,
+      step, equip:f.equip || "", blocker:f.blocker || "", note:f.note || "",
+      updatedBy:f.updatedBy || "", updatedAt:f.updatedAt || 0,
+      pct:progPct(r.contracted, step),
+      entered:isEntered(r.contracted, step)
+    };
+  });
+}
+function latestVersion(){ return S.versions.length ? S.versions[S.versions.length-1] : null; }
+function prevStepOf(key){ const v = latestVersion(); if (!v || !v.data || !v.data[key]) return null; return v.data[key].step || 0; }
+
+/* 与上个版本对比: 返回 {kind:'adv'|'keep'|'back'|'dash', label} */
+function compareTag(row){
+  const prev = prevStepOf(row.key);
+  if (prev === null) return { kind:"dash", label:"—" };  // 无历史版本
+  const cur = row.step || 0;
+  if (cur === 0 && prev === 0) return { kind:"dash", label:"—" };
+  if (cur > prev) return { kind:"adv", label:"有进展" };
+  if (cur < prev) return { kind:"back", label:"倒退" };
+  return { kind:"keep", label:"保持" };
+}
+
+/* =================== 身份 / 可见范围 =================== */
+function isAdmin(){ return S.me && S.me.role === "admin"; }
+function canEdit(){ return S.me && S.me.role !== "viewer"; }
+function inScope(r){
+  if (!S.me || S.me.role === "admin" || S.me.role === "viewer") return true;
+  if (S.me.role === "region")  return r.region === S.me.region;
+  if (S.me.role === "manager") return r.manager === S.me.manager;
+  if (S.me.role === "rep")     return r.rep === S.me.rep;
+  return true;
+}
+function scopeLabel(){
+  if (!S.me) return "未选择身份";
+  if (S.me.role === "admin")   return "管理员 · 全部范围";
+  if (S.me.role === "viewer")  return "查看者 · 只读全部";
+  if (S.me.role === "region")  return "大区:" + S.me.region;
+  if (S.me.role === "manager") return "经理:" + S.me.manager;
+  if (S.me.role === "rep")     return "代表:" + S.me.rep;
+  return "";
+}
+function scopedRows(){ return buildRows().filter(inScope); }
+
+/* =================== 维度定义(看板) =================== */
+const DIMS = {
+  product: { name:"产品",     f:r=>r.product },
+  province:{ name:"省份",     f:r=>r.province },
+  manager: { name:"销售经理", f:r=>r.manager },
+  region:  { name:"销售大区", f:r=>r.region },
+  rep:     { name:"销售代表", f:r=>r.rep }
+};
+
+/* =================== 顶部上下文条 =================== */
+function renderCtx(){
+  const rows = scopedRows();
+  $("#ctx-cycle").textContent = S.base.length ? ("跟进表 · " + (S.baseMeta && S.baseMeta.sample ? "示例数据" : "已导入") + " " + S.base.length + " 条记录") : "尚未导入数据";
+  $("#ctx-scope").textContent = "范围:" + scopeLabel();
+  const filled = rows.filter(r => r.step > 0).length;
+  const entered = rows.filter(r => r.entered).length;
+  const k = $("#ctx-kpis");
+  if (!rows.length){ k.innerHTML = ""; return; }
+  k.innerHTML =
+    '<div class="ctx-kpi"><small>跟进记录</small><b>' + rows.length + '</b></div>' +
+    '<div class="ctx-kpi"><small>已填写</small><b>' + filled + '</b></div>' +
+    '<div class="ctx-kpi"><small>已入院/在用</small><b>' + entered + '</b></div>';
+  renderWatermark();
+}
+function renderWatermark(){
+  const wm = $("#watermark"); if (!wm) return;
+  const txt = S.me ? (scopeLabel()) : "";
+  if (!txt){ wm.innerHTML = ""; return; }
+  let h = "";
+  for (let y = 0; y < 1600; y += 150) for (let x = -100; x < 1700; x += 320)
+    h += '<span style="top:' + y + 'px;left:' + x + 'px">' + esc(txt) + '</span>';
+  wm.innerHTML = h;
+}
+
+/* =================== 填写跟进 =================== */
+function distinct(arr, f){ return [...new Set(arr.map(f).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),"zh")); }
+
+function renderFill(){
+  const host = $("#tab-fill");
+  if (!S.base.length){ host.innerHTML = '<div class="card"><div class="empty"><b>还没有数据</b>请在「管理后台」导入医院 / 产品基础数据。</div></div>'; return; }
+  const all = scopedRows();
+  const ff = S.fFilter;
+  const editable = canEdit();
+
+  // 联动筛选选项(基于当前已选其它条件)
+  const optBase = (exclude) => all.filter(r =>
+    (exclude==="region"   || !ff.region   || r.region===ff.region) &&
+    (exclude==="manager"  || !ff.manager  || r.manager===ff.manager) &&
+    (exclude==="rep"      || !ff.rep      || r.rep===ff.rep) &&
+    (exclude==="province" || !ff.province || r.province===ff.province) &&
+    (exclude==="product"  || !ff.product  || r.product===ff.product) &&
+    (exclude==="status"   || !ff.status   || (ff.status==="signed"?r.contracted:!r.contracted))
+  );
+  // 实际过滤
+  let rows = all.filter(r =>
+    (!ff.region   || r.region===ff.region) &&
+    (!ff.manager  || r.manager===ff.manager) &&
+    (!ff.rep      || r.rep===ff.rep) &&
+    (!ff.province || r.province===ff.province) &&
+    (!ff.product  || r.product===ff.product) &&
+    (!ff.status   || (ff.status==="signed"?r.contracted:!r.contracted))
+  );
+  if (ff.q){ const q = ff.q.toLowerCase(); rows = rows.filter(r => (r.hospName+r.hospCode+r.rep+r.manager+r.province+r.product).toLowerCase().includes(q)); }
+
+  // 排序
+  if (S.fSort){
+    const dir = S.fSort.dir==="asc"?1:-1, id = S.fSort.id;
+    const sv = r => sortValFill(r, id);
+    rows = rows.slice().sort((a,b)=>{ const x=sv(a),y=sv(b); if(x==null&&y==null)return 0; if(x==null)return 1; if(y==null)return -1; if(typeof x==="string"||typeof y==="string")return String(x).localeCompare(String(y),"zh")*dir; return (x-y)*dir; });
+  }
+
+  const sel = (id, cur, opts, ph) => {
+    let s = '<select class="ctrl" id="'+id+'" style="min-width:120px"><option value="">'+ph+'</option>';
+    for (const o of opts) s += '<option'+(cur===o?' selected':'')+'>'+esc(o)+'</option>';
+    return s + '</select>';
+  };
+
+  let h = '<div class="card"><div class="card-h"><b>填写跟进</b><span class="hint">按「医院 × 产品」填写入院进度 · 进度随阶段自动换算 · 自动对比上个版本</span>' +
+    (editable ? '' : '<span class="tag" style="margin-left:6px;background:var(--amber-soft);color:var(--amber)">只读</span>') +
+    '<button class="btn pri sm" id="f-export" style="margin-left:auto">⬇ 导出当前表 (Excel)</button></div>';
+
+  // 表格列定义(全部)
+  const allCols = [
+    { id:"region",   label:"大区",   cls:"l", w:78,  sv:r=>r.region,   td:r=>'<td class="l dim">'+esc(r.region)+'</td>' },
+    { id:"manager",  label:"经理",   cls:"l", w:80,  sv:r=>r.manager,  td:r=>'<td class="l dim">'+esc(r.manager)+'</td>' },
+    { id:"rep",      label:"代表",   cls:"l", w:88,  sv:r=>r.rep,      td:r=>'<td class="l">'+esc(r.rep)+'</td>' },
+    { id:"province", label:"省份",   cls:"l", w:70,  sv:r=>r.province, td:r=>'<td class="l dim">'+esc(r.province)+'</td>' },
+    { id:"hosp",     label:"医院名称",cls:"l stick1", w:138, sv:r=>r.hospName, td:r=>'<td class="l stick1" title="'+esc(r.hospName)+'">'+esc(r.hospName)+'<span class="subc" style="color:var(--mute);font-size:10px"> · '+esc(r.hospCode)+'</span></td>' },
+    { id:"product",  label:"产品",   cls:"l", w:120, sv:r=>r.product,  td:r=>'<td class="l">'+esc(r.product)+'</td>' },
+    { id:"status",   label:"签约",   cls:"c", w:62,  sv:r=>r.contracted?1:0, td:r=>'<td class="c"><span class="tag '+(r.contracted?"signed":"unsigned")+'">'+(r.contracted?"签约":"未签约")+'</span></td>' },
+    { id:"cv",       label:"年化签约量",cls:"", w:84, sv:r=>r.contractVol, td:r=>'<td class="num dim">'+fmtN(r.contractVol)+'</td>' },
+    { id:"fv",       label:"年化自由量",cls:"", w:84, sv:r=>r.freeVol,     td:r=>'<td class="num dim">'+fmtN(r.freeVol)+'</td>' },
+    { id:"step",     label:"入院进度(选择)",cls:"l", w:142, sv:r=>r.step, td:r=>stepCellTd(r, editable) },
+    { id:"pct",      label:"入院进度",cls:"l", w:150, sv:r=>(r.pct!=null?r.pct:(r.step===6?1.01:(r.contracted?(r.step/3):-1))), td:r=>progCellTd(r) },
+    { id:"cmp",      label:"对比上版",cls:"c", w:84,  sv:r=>{const c=compareTag(r);return c.kind==="adv"?2:c.kind==="keep"?1:c.kind==="back"?0:-1;}, td:r=>cmpCellTd(r) },
+    { id:"equip",    label:"设备计划",cls:"l", w:150, sv:r=>r.equip, td:r=>equipCellTd(r, editable) },
+    { id:"blocker",  label:"目前业务卡点",cls:"l", w:190, sv:r=>r.blocker, td:r=>'<td class="l"><input class="cell-in" '+(editable?"":"disabled")+' data-fld="blocker" data-k="'+esc(r.key)+'" value="'+esc(r.blocker)+'" placeholder="卡点…"></td>' },
+    { id:"note",     label:"备注",   cls:"l", w:180, sv:r=>r.note, td:r=>'<td class="l"><input class="cell-in" '+(editable?"":"disabled")+' data-fld="note" data-k="'+esc(r.key)+'" value="'+esc(r.note)+'" placeholder="备注…"></td>' }
+  ];
+  const cols = allCols.filter(c => S.fillColVis[c.id] !== false);
+
+  // 工具条
+  h += '<div class="toolbar">';
+  h += '<div><div class="lbl">大区</div>' + sel("f-region", ff.region, distinct(optBase("region"),DIMS.region.f), "全部大区") + '</div>';
+  h += '<div><div class="lbl">经理</div>' + sel("f-manager", ff.manager, distinct(optBase("manager"),DIMS.manager.f), "全部经理") + '</div>';
+  h += '<div><div class="lbl">代表</div>' + sel("f-rep", ff.rep, distinct(optBase("rep"),DIMS.rep.f), "全部代表") + '</div>';
+  h += '<div><div class="lbl">省份</div>' + sel("f-province", ff.province, distinct(optBase("province"),DIMS.province.f), "全部省份") + '</div>';
+  h += '<div><div class="lbl">产品</div>' + sel("f-product", ff.product, distinct(optBase("product"),DIMS.product.f), "全部产品") + '</div>';
+  h += '<div><div class="lbl">签约状态</div><div class="seg" id="f-status">' +
+    '<button data-s="" class="'+(!ff.status?"on":"")+'">全部</button>' +
+    '<button data-s="signed" class="'+(ff.status==="signed"?"on":"")+'">签约</button>' +
+    '<button data-s="unsigned" class="'+(ff.status==="unsigned"?"on":"")+'">未签约</button></div></div>';
+  h += '<div style="flex:1 1 160px;min-width:160px"><div class="lbl">搜索</div><input class="ctrl" id="f-q" placeholder="医院 / code / 代表…" value="'+esc(ff.q)+'" style="width:100%"></div>';
+
+  // 列显示控制
+  const colToggleLabel = (id) => {
+    const map = { region:'大区', manager:'经理', rep:'代表', province:'省份', hosp:'医院名称', product:'产品', status:'签约', cv:'年化签约量', fv:'年化自由量', step:'入院进度(选择)', pct:'入院进度', cmp:'对比上版', equip:'设备计划', blocker:'目前业务卡点', note:'备注' };
+    return map[id] || id;
+  };
+  h += '<div class="ms-wrap" id="f-colvis" style="margin-left:auto"><div class="ms-trigger"><span class="ms-trigger-txt">☰ 显示字段</span></div><div class="ms-panel">';
+  for (const c of allCols) h += '<label><input type="checkbox" data-cvid="'+c.id+'"'+(S.fillColVis[c.id]!==false?' checked':'')+'> '+colToggleLabel(c.id)+'</label>';
+  h += '</div></div>';
+  if (ff.region||ff.manager||ff.rep||ff.province||ff.product||ff.status||ff.q) h += '<div><div class="lbl">&nbsp;</div><button class="btn sm" id="f-clear">清除筛选</button></div>';
+  h += '</div>';
+
+  h += '<div class="twrap"><table class="dt" id="fill-tbl"><thead><tr>';
+  for (const c of cols){
+    const sorted = S.fSort && S.fSort.id===c.id;
+    h += '<th class="'+(c.cls||"")+' sortable'+(sorted?" sorted":"")+'" data-cid="'+c.id+'"'+(c.w?' style="min-width:'+c.w+'px"':'')+' title="点击排序 · 拖右缘调宽">'+c.label+'<span class="sort-ico">'+(sorted?(S.fSort.dir==="asc"?"▲":"▼"):"⇅")+'</span></th>';
+  }
+  h += '</tr></thead><tbody>';
+  if (!rows.length) h += '<tr><td class="l" colspan="'+cols.length+'" style="text-align:center;color:var(--mute);padding:18px">没有符合条件的记录</td></tr>';
+  else for (const r of rows){ h += '<tr>'; for (const c of cols) h += c.td(r); h += '</tr>'; }
+  h += '</tbody></table></div></div>';
+
+  // 保存滚动位置，避免重渲染后跳回顶部
+  const oldTwrap = host.querySelector('.twrap');
+  const savedScrollTop = oldTwrap ? oldTwrap.scrollTop : 0;
+
+  host.innerHTML = h;
+
+  // 恢复滚动位置（行数不变时，滚动位置有效）
+  requestAnimationFrame(() => {
+    const newTwrap = host.querySelector('.twrap');
+    if (newTwrap) newTwrap.scrollTop = savedScrollTop;
+  });
+
+  bindFill(cols);
+}
+
+function stepCellTd(r, editable){
+  const defs = stepDefs(r.contracted);
+  let s = '<td class="l"><select class="cell-sel'+(r.step?" set":"")+'" '+(editable?"":"disabled")+' data-fld="step" data-k="'+esc(r.key)+'"><option value="0">未填写</option>';
+  for (const d of defs) s += '<option value="'+d.v+'"'+(r.step===d.v?' selected':'')+'>'+esc(d.label)+'</option>';
+  return s + '</select></td>';
+}
+function progCellTd(r){
+  if (r.contracted){
+    // 签约医院: 显示状态, 不显示百分比进度
+    if (!r.step) return '<td class="l"><span class="pill none">未填写</span></td>';
+    return '<td class="l"><span class="pill '+(r.step>=2?"up":"noup")+'">'+(r.step>=2?"已上量":"未上量")+'</span></td>';
+  }
+  if (!r.step) return '<td class="l"><span class="pill none">未填写</span></td>';
+  if (r.step === 6) return '<td class="l"><span class="pill lin">临采</span></td>';
+  const p = r.pct||0;
+  return '<td class="l"><span class="pbar"><span class="pbar-track"><i class="pbar-fill" style="width:'+(p*100)+'%"></i></span><span class="pbar-num">'+fmtPct(p)+'</span></span></td>';
+}
+function cmpCellTd(r){ const c = compareTag(r); return '<td class="c"><span class="cmp '+c.kind+'">'+c.label+'</span></td>'; }
+function equipCellTd(r, editable){
+  let s = '<td class="l"><select class="cell-sel'+(r.equip?" set":"")+'" '+(editable?"":"disabled")+' data-fld="equip" data-k="'+esc(r.key)+'"><option value="">未选择</option>';
+  for (const o of EQUIP_OPTS) s += '<option'+(r.equip===o?' selected':'')+'>'+esc(o)+'</option>';
+  return s + '</select></td>';
+}
+function sortValFill(r, id){
+  const map = { region:r.region, manager:r.manager, rep:r.rep, province:r.province, hosp:r.hospName, product:r.product,
+    status:r.contracted?1:0, cv:r.contractVol, fv:r.freeVol, step:r.step,
+    pct:(r.pct!=null?r.pct:(r.step===6?1.01:(r.contracted?(r.step/3):-1))),
+    cmp:(()=>{const c=compareTag(r);return c.kind==="adv"?2:c.kind==="keep"?1:c.kind==="back"?0:-1;})(),
+    equip:r.equip, blocker:r.blocker, note:r.note };
+  return map[id];
+}
+
+async function updateFill(key, fld, val){
+  const cur = S.fill[key] || {};
+  if (fld === "step") cur.step = parseInt(val) || 0;
+  else cur[fld] = val;
+  cur.updatedBy = S.me ? scopeLabel() : ""; cur.updatedAt = Date.now();
+  S.fill[key] = cur;
+  await saveFill();
+}
+
+function bindFill(cols){
+  const setF = (k,v)=>{ S.fFilter[k]=v; renderFill(); renderCtx(); };
+  if ($("#f-region"))   $("#f-region").onchange   = e => setF("region", e.target.value);
+  if ($("#f-manager"))  $("#f-manager").onchange  = e => setF("manager", e.target.value);
+  if ($("#f-rep"))      $("#f-rep").onchange       = e => setF("rep", e.target.value);
+  if ($("#f-province")) $("#f-province").onchange  = e => setF("province", e.target.value);
+  if ($("#f-product"))  $("#f-product").onchange   = e => setF("product", e.target.value);
+  if ($("#f-status"))   $("#f-status").onclick     = e => { const b=e.target.closest("button"); if(b) setF("status", b.dataset.s); };
+  if ($("#f-q"))        $("#f-q").oninput          = debounce(e => { S.fFilter.q = e.target.value.trim(); renderFill(); }, 250);
+  if ($("#f-clear"))    $("#f-clear").onclick      = () => { S.fFilter = { region:"",manager:"",rep:"",province:"",product:"",status:"",q:"" }; renderFill(); renderCtx(); };
+  if ($("#f-export"))   $("#f-export").onclick     = exportFillXlsx;
+  // 列显示控制
+  const colVisWrap = $("#f-colvis"); if(colVisWrap){
+    const colVisTrigger = colVisWrap.querySelector(".ms-trigger");
+    const colVisPanel = colVisWrap.querySelector(".ms-panel");
+    colVisTrigger.onclick = e => { e.stopPropagation(); const open = colVisWrap.classList.contains("open"); $$('.ms-wrap.open').forEach(w=>w.classList.remove('open')); if(!open) colVisWrap.classList.add('open'); };
+    colVisPanel.onclick = async e => { e.stopPropagation(); const cb = e.target.closest('input[type=checkbox]'); if(!cb) return; S.fillColVis[cb.dataset.cvid] = cb.checked; await Store.set("zsr-colvis", S.fillColVis); renderFill(); };
+  }
+
+  // 下拉(step / equip)即时保存并重算该行展示
+  $$('#fill-tbl select[data-fld]').forEach(selEl => {
+    selEl.onchange = async () => {
+      await updateFill(selEl.dataset.k, selEl.dataset.fld, selEl.value);
+      renderFill(); renderCtx();
+    };
+  });
+  // 文本(blocker / note)防抖保存(不重渲染,避免打断输入)
+  $$('#fill-tbl input[data-fld]').forEach(inp => {
+    inp.oninput = debounce(() => updateFill(inp.dataset.k, inp.dataset.fld, inp.value), 400);
+    inp.onblur  = () => updateFill(inp.dataset.k, inp.dataset.fld, inp.value);
+  });
+  // 表头排序
+  $$('#fill-tbl thead th[data-cid]').forEach(th => {
+    th.addEventListener("click", e => {
+      if (e.target.closest(".resize-handle")) return;
+      const id = th.dataset.cid;
+      if (S.fSort && S.fSort.id===id) S.fSort = S.fSort.dir==="desc" ? {id,dir:"asc"} : null;
+      else S.fSort = { id, dir:"desc" };
+      renderFill();
+    });
+  });
+  requestAnimationFrame(() => initResizableTable($("#fill-tbl"), "fill"));
+}
+
+/* =================== 入院看板 =================== */
+function renderDash(){
+  const host = $("#tab-dash");
+  if (!S.base.length){ host.innerHTML = '<div class="card"><div class="empty"><b>还没有数据</b>请在「管理后台」导入基础数据。</div></div>'; return; }
+  const d = S.dash;
+  if (!DIMS[d.dim]) d.dim = "product";
+  if (!d.drill) d.drill = {};
+
+  let rows = scopedRows();
+  // 下钻筛选(各维度多选, 联动)
+  const drillDims = ["product","province","manager","region","rep"];
+  for (const dk of drillDims){ const fv = d.drill[dk]; if (fv && fv.length) rows = rows.filter(r => fv.includes(DIMS[dk].f(r))); }
+
+  // 汇总指标
+  const overall = aggStats(rows);
+
+  // KPI 概览
+  let h = '<div class="card"><div class="card-h"><b>入院看板</b><span class="hint">不同维度的入院进度与入院家数 · 可下钻筛选</span></div>';
+  h += '<div class="kpis">' +
+    kpi("跟进记录", overall.n, "医院×产品") +
+    kpi("已填写", overall.filled, "占 " + fmtPct(overall.n?overall.filled/overall.n:0)) +
+    kpi("已入院/在用家数", overall.entered, "已入院+临采+已上量") +
+    kpi("未签约·平均进度", overall.avgPctTxt, overall.avgDen + " 家计入") +
+    kpi("临采家数", overall.linchai, "未签约") +
+    kpi("签约上量率", overall.signRateTxt, overall.signEntered + "/" + overall.signN + " 家") +
+    '</div>';
+
+  // 维度切换
+  h += '<div class="toolbar" style="border-top:1px solid var(--line)">';
+  h += '<div><div class="lbl">汇总维度</div><div class="seg" id="d-dim">' +
+    ["product","province","manager","region","rep"].map(k => '<button data-d="'+k+'" class="'+(d.dim===k?"on":"")+'">by '+DIMS[k].name+'</button>').join("") + '</div></div>';
+  h += '</div>';
+
+  // 下钻筛选条
+  const activeDrill = drillDims.reduce((n,dk)=>n+((d.drill[dk]||[]).length?1:0),0);
+  h += '<div class="drillbar"><span class="drillbar-lab">▾ 下钻筛选</span>';
+  for (const dk of drillDims){
+    let base = scopedRows();
+    for (const odk of drillDims) if (odk!==dk && d.drill[odk] && d.drill[odk].length) base = base.filter(r => d.drill[odk].includes(DIMS[odk].f(r)));
+    const vals = distinct(base, DIMS[dk].f);
+    const seld = d.drill[dk] || [];
+    const txt = seld.length ? (seld.length===1?esc(seld[0]):DIMS[dk].name+" · 已选 "+seld.length) : "全部"+DIMS[dk].name;
+    h += '<div class="ms-wrap'+(seld.length?" active":"")+'" id="dms-'+dk+'" data-dk="'+dk+'"><div class="ms-trigger"><span class="ms-trigger-txt">'+txt+'</span></div><div class="ms-panel">';
+    h += '<label class="ms-all"><input type="checkbox" data-all="'+dk+'"'+(!seld.length?" checked":"")+'> 全部'+DIMS[dk].name+'</label>';
+    for (const v of vals) h += '<label><input type="checkbox" data-dk="'+dk+'" value="'+esc(v)+'"'+(seld.includes(v)?" checked":"")+'> '+esc(v)+'</label>';
+    h += '</div></div>';
+  }
+  h += '<span class="drillbar-sp"></span>';
+  if (activeDrill) h += '<span class="drillbar-count">'+activeDrill+' 个维度已筛选</span><button class="btn sm" id="d-clear">清除筛选</button>';
+  h += '</div></div>';
+
+  // 主表(按维度)
+  const groups = {};
+  for (const r of rows){ const key = DIMS[d.dim].f(r) || "(未填)"; (groups[key] = groups[key] || []).push(r); }
+  let gList = Object.keys(groups).map(k => ({ key:k, stats:aggStats(groups[k]) }));
+  // 默认按 入院家数 降序
+  if (d.sort){
+    const dir = d.sort.dir==="asc"?1:-1, id=d.sort.id;
+    gList.sort((a,b)=>{ const x=sortValDash(a,id),y=sortValDash(b,id); if(x==null&&y==null)return 0; if(x==null)return 1; if(y==null)return -1; if(typeof x==="string"||typeof y==="string")return String(x).localeCompare(String(y),"zh")*dir; return (x-y)*dir; });
+  } else gList.sort((a,b)=>b.stats.entered - a.stats.entered);
+
+  const dcols = [
+    { id:"dim",     label:DIMS[d.dim].name, cls:"l stick1", w:150, sv:g=>g.key },
+    { id:"n",       label:"记录数",   w:70,  sv:g=>g.stats.n },
+    { id:"filled",  label:"已填写",   w:70,  sv:g=>g.stats.filled },
+    { id:"entered", label:"入院家数", w:84,  sv:g=>g.stats.entered },
+    { id:"avgPct",  label:"未签约平均进度", w:120, sv:g=>g.stats.avgPct },
+    { id:"linchai", label:"临采",     w:60,  sv:g=>g.stats.linchai },
+    { id:"signRate",label:"签约上量率",w:96,  sv:g=>g.stats.signRate },
+    { id:"stage",   label:"阶段分布(未签约 意向→临采 / 签约 上量)", cls:"l", w:230, sv:g=>g.stats.entered }
+  ];
+  h += '<div class="card"><div class="card-h"><b>by ' + DIMS[d.dim].name + ' · 入院进度与家数</b><span class="hint">入院家数 = 未签约「已入院/临采」+ 签约「已上量」 · 点表头排序 · 拖列缘调宽</span></div>';
+  h += '<div class="twrap"><table class="dt" id="dash-tbl"><thead><tr>';
+  for (const c of dcols){ const sorted = d.sort && d.sort.id===c.id; h += '<th class="'+(c.cls||"")+' sortable'+(sorted?" sorted":"")+'" data-cid="'+c.id+'"'+(c.w?' style="min-width:'+c.w+'px"':'')+'>'+c.label+'<span class="sort-ico">'+(sorted?(d.sort.dir==="asc"?"▲":"▼"):"⇅")+'</span></th>'; }
+  h += '</tr></thead><tbody>';
+  for (const g of gList) h += dashRow(g, dcols);
+  // 合计
+  h += '<tr class="total-row">' + dashTotalCells(overall, dcols) + '</tr>';
+  h += '</tbody></table></div>';
+  h += stageLegend();
+  h += '</div>';
+
+  host.innerHTML = h;
+  bindDash(drillDims);
+}
+
+function aggStats(rows){
+  const n = rows.length;
+  const filled = rows.filter(r=>r.step>0).length;
+  const entered = rows.filter(r=>r.entered).length;
+  const linchai = rows.filter(r=>!r.contracted && r.step===6).length;
+  // 未签约平均进度(仅 v1-5 计入)
+  const pctRows = rows.filter(r=>!r.contracted && r.step>=1 && r.step<=5);
+  const avgPct = pctRows.length ? pctRows.reduce((s,r)=>s+(r.pct||0),0)/pctRows.length : null;
+  const signN = rows.filter(r=>r.contracted).length;
+  const signEntered = rows.filter(r=>r.contracted && r.step>=2).length;
+  const signRate = signN ? signEntered/signN : null;
+  // 阶段分布
+  const stage = { 1:0,2:0,3:0,4:0,5:0,6:0, up:0, noup:0, none:0 };
+  for (const r of rows){
+    if (r.contracted){ if (r.step>=2) stage.up++; else if (r.step===1) stage.noup++; else stage.none++; }
+    else { if (r.step>=1 && r.step<=6) stage[r.step]++; else stage.none++; }
+  }
+  return { n, filled, entered, linchai, avgPct, avgPctTxt:(avgPct==null?"–":fmtPct(avgPct)), avgDen:pctRows.length,
+    signN, signEntered, signRate, signRateTxt:(signRate==null?"–":fmtPct(signRate)), stage };
+}
+function kpi(label, val, sub){ return '<div class="kpi"><small>'+esc(label)+'</small><b>'+esc(String(val))+'</b>'+(sub?'<span class="sub">'+esc(sub)+'</span>':'')+'</div>'; }
+function stageBar(stats){
+  const order = [["1",STAGE_COLORS[1]],["2",STAGE_COLORS[2]],["3",STAGE_COLORS[3]],["4",STAGE_COLORS[4]],["5",STAGE_COLORS[5]],["6",STAGE_COLORS[6]],["noup",STAGE_COLORS.noup],["up",STAGE_COLORS.up]];
+  const total = stats.n || 1;
+  let bar = '<div class="stbar" title="阶段分布">';
+  for (const [k,c] of order){ const v = stats.stage[k]||0; if (!v) continue; bar += '<i style="width:'+(v/total*100)+'%;background:'+c+'" title="'+v+'"></i>'; }
+  const none = stats.stage.none||0; if (none) bar += '<i style="width:'+(none/total*100)+'%;background:'+STAGE_COLORS.none+'"></i>';
+  return bar + '</div>';
+}
+function stageLegend(){
+  const items = [["意向",STAGE_COLORS[1]],["已试用",STAGE_COLORS[2]],["已提单",STAGE_COLORS[3]],["已过会",STAGE_COLORS[4]],["已入院",STAGE_COLORS[5]],["临采",STAGE_COLORS[6]],["签约·未上量",STAGE_COLORS.noup],["签约·已上量",STAGE_COLORS.up],["未填写",STAGE_COLORS.none]];
+  return '<div class="st-leg" style="padding:10px 18px 16px">' + items.map(([t,c])=>'<span><i class="st-dot" style="background:'+c+'"></i>'+t+'</span>').join("") + '</div>';
+}
+function dashRow(g, dcols){
+  const s = g.stats;
+  let h = '<tr>';
+  for (const c of dcols){
+    if (c.id==="dim") h += '<td class="l stick1">'+esc(g.key)+'</td>';
+    else if (c.id==="n") h += '<td class="num">'+s.n+'</td>';
+    else if (c.id==="filled") h += '<td class="num">'+s.filled+'<span class="subc" style="color:var(--mute);font-size:10px"> '+fmtPct(s.n?s.filled/s.n:0)+'</span></td>';
+    else if (c.id==="entered") h += '<td class="num"><b>'+s.entered+'</b></td>';
+    else if (c.id==="avgPct") h += '<td class="l">'+(s.avgPct==null?'<span class="dim">–</span>':'<span class="pbar"><span class="pbar-track"><i class="pbar-fill" style="width:'+(s.avgPct*100)+'%"></i></span><span class="pbar-num">'+fmtPct(s.avgPct)+'</span></span>')+'</td>';
+    else if (c.id==="linchai") h += '<td class="num">'+(s.linchai?'<span class="pill lin">'+s.linchai+'</span>':'<span class="dim">–</span>')+'</td>';
+    else if (c.id==="signRate") h += '<td class="num">'+(s.signRate==null?'<span class="dim">–</span>':fmtPct(s.signRate)+'<span class="subc" style="color:var(--mute);font-size:10px"> '+s.signEntered+'/'+s.signN+'</span>')+'</td>';
+    else if (c.id==="stage") h += '<td class="l">'+stageBar(s)+'</td>';
+  }
+  return h + '</tr>';
+}
+function dashTotalCells(s, dcols){
+  let h = "";
+  for (const c of dcols){
+    if (c.id==="dim") h += '<td class="l stick1">合计</td>';
+    else if (c.id==="n") h += '<td class="num">'+s.n+'</td>';
+    else if (c.id==="filled") h += '<td class="num">'+s.filled+'</td>';
+    else if (c.id==="entered") h += '<td class="num"><b>'+s.entered+'</b></td>';
+    else if (c.id==="avgPct") h += '<td class="l">'+(s.avgPct==null?'–':fmtPct(s.avgPct))+'</td>';
+    else if (c.id==="linchai") h += '<td class="num">'+(s.linchai||"–")+'</td>';
+    else if (c.id==="signRate") h += '<td class="num">'+(s.signRate==null?'–':fmtPct(s.signRate))+'</td>';
+    else if (c.id==="stage") h += '<td class="l">'+stageBar(s)+'</td>';
+  }
+  return h;
+}
+function sortValDash(g, id){
+  const s = g.stats;
+  const map = { dim:g.key, n:s.n, filled:s.filled, entered:s.entered, avgPct:s.avgPct, linchai:s.linchai, signRate:s.signRate, stage:s.entered };
+  return map[id];
+}
+function bindDash(drillDims){
+  const d = S.dash;
+  $("#d-dim").onclick = e => { const b=e.target.closest("button"); if(b){ d.dim=b.dataset.d; d.sort=null; renderDash(); } };
+  if ($("#d-clear")) $("#d-clear").onclick = () => { d.drill={}; renderDash(); };
+  // 多选下钻
+  for (const dk of drillDims){
+    const wrap = $("#dms-"+dk); if(!wrap) continue;
+    const trigger = wrap.querySelector(".ms-trigger");
+    const txtEl = wrap.querySelector(".ms-trigger-txt");
+    const panel = wrap.querySelector(".ms-panel");
+    trigger.onclick = e => { e.stopPropagation(); const open = wrap.classList.contains("open"); $$("#tab-dash .ms-wrap").forEach(w=>w.classList.remove("open")); if(!open) wrap.classList.add("open"); };
+    panel.onclick = e => {
+      e.stopPropagation();
+      const allCb = panel.querySelector('input[data-all="'+dk+'"]');
+      const items = [...panel.querySelectorAll('input[data-dk="'+dk+'"]')];
+      if (e.target===allCb || e.target.closest("label")===allCb.closest("label")){ if(allCb.checked){ items.forEach(c=>c.checked=false); d.drill[dk]=[]; } }
+      else { const checked = items.filter(c=>c.checked).map(c=>c.value); allCb.checked=!checked.length; d.drill[dk]=checked; }
+      const sel = d.drill[dk]||[]; wrap.classList.toggle("active", sel.length>0);
+      txtEl.textContent = sel.length ? (sel.length===1?sel[0]:DIMS[dk].name+" · 已选 "+sel.length) : "全部"+DIMS[dk].name;
+    };
+  }
+  if (S._dashClick) document.removeEventListener("click", S._dashClick);
+  S._dashClick = e => {
+    if (S.tab!=="dash" && S.tab!=="fill") return;
+    if (!e.target.closest(".ms-wrap")){
+      const wasOpenDash = $$("#tab-dash .ms-wrap.open").length>0;
+      const wasOpenFill = $$("#tab-fill .ms-wrap.open").length>0;
+      $$("#tab-dash .ms-wrap").forEach(w=>w.classList.remove("open"));
+      $$("#tab-fill .ms-wrap").forEach(w=>w.classList.remove("open"));
+      if(wasOpenDash) renderDash();
+    }
+  };
+  document.addEventListener("click", S._dashClick);
+  // 排序
+  $$('#dash-tbl thead th[data-cid]').forEach(th => {
+    th.addEventListener("click", e => {
+      if (e.target.closest(".resize-handle")) return;
+      const id = th.dataset.cid;
+      if (d.sort && d.sort.id===id) d.sort = d.sort.dir==="desc" ? {id,dir:"asc"} : null;
+      else d.sort = { id, dir:"desc" };
+      renderDash();
+    });
+  });
+  requestAnimationFrame(() => initResizableTable($("#dash-tbl"), "dash"));
+}
+
+/* =================== 管理后台 =================== */
+function renderAdmin(){
+  const host = $("#tab-admin");
+  if (!isAdmin()){ host.innerHTML = '<div class="card"><div class="empty"><b>无权限</b>仅管理员可访问管理后台。</div></div>'; return; }
+  const v = latestVersion();
+  let h = '';
+
+  // 导入
+  h += '<div class="card"><div class="card-h"><b>导入基础数据</b><span class="hint">字段:销售大区 / 销售经理 / 销售代表 / 省份 / 医院名称 / 医院code / 是否签约医院 / 产品 / 年化签约量 / 年化自由量</span></div><div class="card-b">';
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">' +
+    '<button class="btn pri" id="a-file">📄 选择 Excel / CSV 文件</button>' +
+    '<button class="btn" id="a-paste-tgl">📋 粘贴表格数据</button>' +
+    '<button class="btn" id="a-sample">↻ 载入示例数据</button>' +
+    '</div>';
+  h += '<div id="a-paste-box" style="display:none">' +
+    '<div class="lbl">从 Excel 复制整块(含表头)粘贴到此处,然后点「解析并导入」。也支持逗号 CSV。</div>' +
+    '<textarea class="ctrl" id="a-paste" rows="7" placeholder="销售大区\t销售经理\t销售代表\t省份\t医院名称\t医院code\t是否签约医院\t产品\t年化签约量\t年化自由量&#10;段文\t廖斌\t韩晴晴\t北京市\t友谊医院\tH000014\t否\tAnrei负压鞘\t0\t20"></textarea>' +
+    '<div style="margin-top:10px;display:flex;gap:10px"><button class="btn pri sm" id="a-paste-go">解析并导入</button><span class="hint" id="a-paste-msg"></span></div></div>';
+  h += '<div class="hint" style="margin-top:10px">导入将<b>替换</b>现有基础数据;已填写的进度按「医院code+产品」保留匹配。是否签约医院:填「是」即为签约,其它为未签约。</div>';
+  h += '</div></div>';
+
+  // 数据概览 + 版本
+  const rows = buildRows();
+  h += '<div class="card"><div class="card-h"><b>数据与版本</b><span class="hint">'+(S.baseMeta?(S.baseMeta.sample?'当前为示例数据':'共 '+S.base.length+' 条记录'):'尚无数据')+'</span></div><div class="card-b">';
+  h += '<div class="kpis" style="padding:0 0 14px">' +
+    kpi("医院数", new Set(S.base.map(r=>r.hospCode)).size, "") +
+    kpi("记录数", S.base.length, "医院×产品") +
+    kpi("已填写", rows.filter(r=>r.step>0).length, "") +
+    kpi("历史版本", S.versions.length, "用于对比") +
+    '</div>';
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">' +
+    '<button class="btn pri" id="a-snap">📌 保存当前为新版本</button>' +
+    '<input class="ctrl" id="a-snap-label" placeholder="版本名称(可选,默认日期)" style="width:220px">' +
+    '<button class="btn" id="a-export-pkg">⬇ 导出数据包(JSON)</button>' +
+    '<button class="btn" id="a-import-pkg">⬆ 导入数据包(JSON)</button>' +
+    '<button class="btn danger" id="a-clear">清空所有数据</button>' +
+    '</div>';
+  h += '<div class="hint" style="margin-top:8px">「保存版本」会把当前填写存为快照;<b>填写跟进</b>页的「对比上版」即与<b>最新</b >快照比较。</div>';
+
+  // 版本列表
+  if (S.versions.length){
+    h += '<div style="margin-top:14px"><div class="lbl">历史版本(最新在底部,用于对比)</div><table class="dt" style="margin-top:4px"><thead><tr><th class="l">版本名称</th><th class="l">保存时间</th><th>记录数</th><th class="c">操作</th></tr></thead><tbody>';
+    S.versions.forEach((ver,i) => {
+      const isLast = i===S.versions.length-1;
+      h += '<tr><td class="l">'+esc(ver.label)+(isLast?' <span class="tag new" style="background:var(--green-soft);color:var(--green)">对比基准</span>':'')+'</td><td class="l dim">'+new Date(ver.ts).toLocaleString("zh-CN")+'</td><td class="num">'+Object.keys(ver.data||{}).length+'</td><td class="c"><button class="btn sm danger" data-delver="'+ver.id+'">删除</button></td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  h += '</div></div>';
+
+  // ===== 权限管理 =====
+  h += '<div class="card" id="a-auth-card"><div class="card-h"><b>权限管理</b><span class="hint">为每个代表/经理/大区/管理员设置登录密码 · 管理员可一键操作</span></div><div class="card-b">';
+  // 收集所有用户
+  const users = [];
+  const addUser = (role, name, label) => { if(name) users.push({role, name, label, key:role+":"+name}); };
+  distinct(S.base, r=>r.rep).forEach(n=>addUser("rep", n, "代表"));
+  distinct(S.base, r=>r.manager).forEach(n=>addUser("manager", n, "经理"));
+  distinct(S.base, r=>r.region).forEach(n=>addUser("region", n, "大区"));
+  users.push({role:"admin", name:"管理员", label:"管理员", key:"admin:admin"});
+  users.sort((a,b)=>a.label.localeCompare(b.label,"zh")||a.name.localeCompare(b.name,"zh"));
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">' +
+    '<button class="btn pri" id="a-auth-setall">🔑 一键设置默认密码(123456)</button>' +
+    '<button class="btn danger" id="a-auth-resetall">🔄 一键重置(清空所有密码)</button>' +
+    '<span class="hint">清空后所有身份可直接切换，无需密码</span></div>';
+  h += '<table class="dt"><thead><tr><th class="l">角色</th><th class="l">名称</th><th class="l">密码状态</th><th class="l">设置密码</th><th class="c">操作</th></tr></thead><tbody>';
+  for (const u of users){
+    const hasPw = !!(S.passwords[u.key] && S.passwords[u.key].trim());
+    h += '<tr><td class="l">'+esc(u.label)+'</td><td class="l">'+esc(u.name)+'</td>' +
+      '<td class="l">'+(hasPw?'<span class="tag signed">已设置</span>':'<span class="tag unsigned">未设置</span>')+'</td>' +
+      '<td class="l"><input class="cell-in" id="a-pw-'+esc(u.key)+'" type="password" placeholder="输入新密码" style="width:160px" autocomplete="new-password"></td>' +
+      '<td class="c"><button class="btn sm pri" data-savepw="'+esc(u.key)+'">保存</button></td></tr>';
+  }
+  h += '</tbody></table></div></div>';
+
+  host.innerHTML = h;
+  bindAdmin();
+}
+function bindAdmin(){
+  if ($("#a-file")) $("#a-file").onclick = () => $("#file-xlsx").click();
+  if ($("#a-sample")) $("#a-sample").onclick = async () => {
+    if (!confirm("载入示例数据将替换现有基础数据与填写,确定?")) return;
+    S.base = sampleBase(); S.baseMeta = { importedAt:Date.now(), count:S.base.length, sample:true };
+    S.fill = sampleFill(S.base); S.versions = [samplePrevVersion()];
+    await saveBase(); await saveFill(); await saveVersions();
+    toast("已载入示例数据"); rerender();
+  };
+  if ($("#a-paste-tgl")) $("#a-paste-tgl").onclick = () => { const b=$("#a-paste-box"); b.style.display = b.style.display==="none"?"block":"none"; };
+  if ($("#a-paste-go")) $("#a-paste-go").onclick = () => importFromText($("#a-paste").value);
+  if ($("#a-snap")) $("#a-snap").onclick = async () => {
+    const label = ($("#a-snap-label").value || "").trim() || ("版本 " + new Date().toLocaleString("zh-CN"));
+    const data = {}; for (const k in S.fill){ const f=S.fill[k]; data[k] = { step:f.step||0, equip:f.equip||"", blocker:f.blocker||"", note:f.note||"" }; }
+    S.versions.push({ id:uid(), label, ts:Date.now(), data });
+    await saveVersions(); toast("已保存版本:" + label); renderAdmin();
+  };
+  $$('button[data-delver]').forEach(b => b.onclick = async () => {
+    if (!confirm("删除该版本?")) return;
+    S.versions = S.versions.filter(v => v.id !== b.dataset.delver);
+    await saveVersions(); renderAdmin(); renderCtx();
+  });
+  if ($("#a-export-pkg")) $("#a-export-pkg").onclick = exportPkg;
+  if ($("#a-import-pkg")) $("#a-import-pkg").onclick = importPkg;
+  if ($("#a-clear")) $("#a-clear").onclick = async () => {
+    if (!confirm("清空所有基础数据、填写与版本?此操作不可撤销。")) return;
+    S.base=[]; S.baseMeta=null; S.fill={}; S.versions=[]; S.passwords={};
+    await saveBase(); await saveFill(); await saveVersions(); await savePasswords();
+    toast("已清空"); rerender();
+  };
+  // 权限管理绑定
+  if ($("#a-auth-setall")) $("#a-auth-setall").onclick = async () => {
+    if (!confirm("为所有用户设置默认密码 123456 ?")) return;
+    const users = [];
+    distinct(S.base, r=>r.rep).forEach(n=>users.push("rep:"+n));
+    distinct(S.base, r=>r.manager).forEach(n=>users.push("manager:"+n));
+    distinct(S.base, r=>r.region).forEach(n=>users.push("region:"+n));
+    users.push("admin:admin");
+    for (const k of users) S.passwords[k] = "123456";
+    await savePasswords(); toast("已设置所有默认密码"); renderAdmin();
+  };
+  if ($("#a-auth-resetall")) $("#a-auth-resetall").onclick = async () => {
+    if (!confirm("清空所有密码? 之后所有身份可直接切换。")) return;
+    S.passwords = {};
+    await savePasswords(); toast("已清空所有密码"); renderAdmin();
+  };
+  $$('button[data-savepw]').forEach(b => b.onclick = async () => {
+    const key = b.dataset.savepw;
+    const inp = $('#a-pw-'+key); if(!inp) return;
+    const pw = inp.value.trim();
+    if(!pw){ toast("请输入密码"); return; }
+    S.passwords[key] = pw;
+    await savePasswords(); toast("已保存密码"); renderAdmin();
+  });
+}
+
+/* =================== 导入解析 =================== */
+function detectCols(headers){
+  const H = headers.map(h => String(h ?? "").trim());
+  const find = (...preds) => { for (const p of preds){ const i = H.findIndex(h => p(h)); if (i>=0) return i; } return -1; };
+  const inc = kw => (h => h.includes(kw));
+  return {
+    region: find(inc("大区")),
+    manager: find(inc("经理")),
+    rep: find(inc("代表")),
+    province: find(inc("省")),
+    hospName: find(h=>h.includes("医院")&&h.includes("名称"), h=>h==="医院名称"),
+    hospCode: find(h=>h.toLowerCase().includes("code"), h=>h.includes("医院编")),
+    contracted: find(inc("签约医院"), inc("是否签约")),
+    product: find(h=>h==="产品", inc("产品")),
+    contractVol: find(inc("签约量")),
+    freeVol: find(inc("自由量")),
+    stepSel: find(h=>h.includes("入院进度")&&h.includes("下拉"), h=>h==="入院进度  下拉选择"),
+    equip: find(inc("设备")),
+    blocker: find(inc("卡点")),
+    note: find(h=>h==="备注")
+  };
+}
+function parseStep(signed, raw){
+  const s = String(raw ?? "").trim();
+  if (!s) return 0;
+  const m = s.match(/\d+/);
+  let v = m ? parseInt(m[0]) : 0;
+  if (signed){
+    if (/已.*上量|已经上量/.test(s)) return 2;
+    if (/未.*上量/.test(s)) return 1;
+    if (v===1||v===2) return v; return 0;
+  }
+  if (/临采/.test(s)) return 6;
+  if (/已入院/.test(s)) return 5;
+  if (/过会/.test(s)) return 4;
+  if (/提单|提计划/.test(s)) return 3;
+  if (/试用/.test(s)) return 2;
+  if (/意向/.test(s)) return 1;
+  return (v>=1 && v<=6) ? v : 0;
+}
+function ingestRows(records){
+  // records: array of {region,manager,rep,province,hospName,hospCode,contracted,product,contractVol,freeVol, [stepSel,equip,blocker,note]}
+  const clean = records.filter(r => r.hospCode && r.product);
+  if (!clean.length){ toast("⚠ 未解析到有效记录(需含 医院code 与 产品)"); return false; }
+  const oldFill = S.fill;
+  S.base = clean.map(r => ({
+    region:r.region||"", manager:r.manager||"", rep:r.rep||"", province:r.province||"",
+    hospName:r.hospName||"", hospCode:String(r.hospCode).trim(),
+    contracted:/^是|签约|y|yes|true|1$/i.test(String(r.contracted||"").trim()) && String(r.contracted||"").trim()!=="否",
+    product:String(r.product).trim(),
+    contractVol:num(r.contractVol), freeVol:num(r.freeVol)
+  }));
+  S.baseMeta = { importedAt:Date.now(), count:S.base.length, sample:false };
+  // 合并填写: 保留旧填写; 若导入含进度则覆盖
+  const newFill = {};
+  for (const r of clean){
+    const sr = S.base.find(b => b.hospCode===String(r.hospCode).trim() && b.product===String(r.product).trim());
+    const k = rowKey(sr);
+    const prev = oldFill[k] || {};
+    const f = { step:prev.step||0, equip:prev.equip||"", blocker:prev.blocker||"", note:prev.note||"", updatedBy:prev.updatedBy||"", updatedAt:prev.updatedAt||0 };
+    if (r.stepSel != null && String(r.stepSel).trim()) f.step = parseStep(sr.contracted, r.stepSel);
+    if (r.equip != null && String(r.equip).trim()) f.equip = String(r.equip).trim();
+    if (r.blocker != null && String(r.blocker).trim()) f.blocker = String(r.blocker).trim();
+    if (r.note != null && String(r.note).trim()) f.note = String(r.note).trim();
+    newFill[k] = f;
+  }
+  S.fill = newFill;
+  return true;
+}
+async function importFromText(text){
+  text = (text||"").trim();
+  if (!text){ toast("请粘贴数据"); return; }
+  const sep = text.includes("\t") ? "\t" : ",";
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2){ $("#a-paste-msg").textContent = "至少需要表头 + 1 行数据"; return; }
+  const headers = lines[0].split(sep);
+  const C = detectCols(headers);
+  if (C.hospCode<0 || C.product<0){ $("#a-paste-msg").textContent = "未找到「医院code」或「产品」列,请检查表头"; return; }
+  const recs = [];
+  for (let i=1;i<lines.length;i++){
+    const cells = lines[i].split(sep);
+    const g = idx => idx>=0 ? (cells[idx]??"").trim() : "";
+    recs.push({ region:g(C.region),manager:g(C.manager),rep:g(C.rep),province:g(C.province),hospName:g(C.hospName),hospCode:g(C.hospCode),contracted:g(C.contracted),product:g(C.product),contractVol:g(C.contractVol),freeVol:g(C.freeVol),stepSel:g(C.stepSel),equip:g(C.equip),blocker:g(C.blocker),note:g(C.note) });
+  }
+  if (ingestRows(recs)){ await saveBase(); await saveFill(); toast("已导入 "+S.base.length+" 条记录"); rerender(); }
+}
+function handleXlsxFile(file){
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type:"array" });
+      const sheetName = wb.SheetNames.find(n => n.includes("填写")) || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const arr = XLSX.utils.sheet_to_json(ws, { header:1, defval:"" });
+      if (!arr.length){ toast("⚠ 文件为空"); return; }
+      // 找到表头行(含"医院code"或"产品")
+      let hr = 0;
+      for (let i=0;i<Math.min(arr.length,8);i++){ const row = arr[i].map(x=>String(x).toLowerCase()); if (row.some(c=>c.includes("code")) || arr[i].some(c=>String(c).trim()==="产品")){ hr=i; break; } }
+      const headers = arr[hr];
+      const C = detectCols(headers);
+      if (C.hospCode<0 || C.product<0){ toast("⚠ 未找到「医院code」或「产品」列"); return; }
+      const recs = [];
+      for (let i=hr+1;i<arr.length;i++){
+        const cells = arr[i];
+        const g = idx => idx>=0 ? cells[idx] : "";
+        if (!String(g(C.hospCode)).trim() && !String(g(C.product)).trim()) continue;
+        recs.push({ region:g(C.region),manager:g(C.manager),rep:g(C.rep),province:g(C.province),hospName:g(C.hospName),hospCode:g(C.hospCode),contracted:g(C.contracted),product:g(C.product),contractVol:g(C.contractVol),freeVol:g(C.freeVol),stepSel:g(C.stepSel),equip:g(C.equip),blocker:g(C.blocker),note:g(C.note) });
+      }
+      if (ingestRows(recs)){ await saveBase(); await saveFill(); toast("已从「"+sheetName+"」导入 "+S.base.length+" 条记录"); rerender(); }
+    } catch(err){ console.error(err); toast("⚠ 解析失败:"+err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* =================== 导出 =================== */
+function exportFillXlsx(){
+  const rows = (function(){ // 应用当前筛选与范围
+    const all = scopedRows(); const ff = S.fFilter;
+    let rs = all.filter(r => (!ff.region||r.region===ff.region)&&(!ff.manager||r.manager===ff.manager)&&(!ff.rep||r.rep===ff.rep)&&(!ff.province||r.province===ff.province)&&(!ff.product||r.product===ff.product)&&(!ff.status||(ff.status==="signed"?r.contracted:!r.contracted)));
+    if (ff.q){ const q=ff.q.toLowerCase(); rs=rs.filter(r=>(r.hospName+r.hospCode+r.rep+r.manager+r.province+r.product).toLowerCase().includes(q)); }
+    return rs;
+  })();
+  const head = ["销售大区","销售经理","销售代表","省份","医院名称","医院code","是否签约医院","产品","入院进度选择","入院进度","与上版对比","设备计划","目前业务卡点","年化签约量","年化自由量","备注"];
+  const data = [head];
+  for (const r of rows){
+    const stepLabel = r.step ? (stepInfo(r.contracted,r.step)||{}).label || "" : "";
+    const prog = r.contracted ? (r.step?(r.step>=2?"已上量":"未上量"):"") : (r.step===6?"临采":(r.step?fmtPct(r.pct):""));
+    const cmp = compareTag(r).label;
+    data.push([r.region,r.manager,r.rep,r.province,r.hospName,r.hospCode,r.contracted?"是":"否",r.product,stepLabel,prog,cmp,r.equip,r.blocker,r.contractVol,r.freeVol,r.note]);
+  }
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws["!cols"] = head.map((h,i)=>({ wch: [10,10,10,8,30,12,12,14,12,12,10,14,22,12,12,20][i]||12 }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "入院跟进");
+  XLSX.writeFile(wb, "鞘产品入院跟进_"+new Date().toISOString().slice(0,10)+".xlsx");
+}
+function exportPkg(){
+  const pkg = { app:"zsr-tracking", v:1, exportedAt:Date.now(), base:S.base, baseMeta:S.baseMeta, fill:S.fill, versions:S.versions };
+  const blob = new Blob([JSON.stringify(pkg)], { type:"application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "入院跟进数据包_"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function importPkg(){
+  const inp = document.createElement("input"); inp.type="file"; inp.accept=".json";
+  inp.onchange = () => { const f = inp.files[0]; if(!f) return; const rd = new FileReader();
+    rd.onload = async e => { try { const p = JSON.parse(e.target.result); if (!p.base){ toast("⚠ 数据包格式不正确"); return; }
+      S.base=p.base||[]; S.baseMeta=p.baseMeta||{importedAt:Date.now(),count:S.base.length}; S.fill=p.fill||{}; S.versions=p.versions||[];
+      await saveBase(); await saveFill(); await saveVersions(); toast("已导入数据包"); rerender();
+    } catch(err){ toast("⚠ 解析失败:"+err.message); } };
+    rd.readAsText(f); };
+  inp.click();
+}
+
+/* =================== 身份选择 =================== */
+function openIdentity(){
+  const reps = distinct(S.base, DIMS.rep.f);
+  const mgrs = distinct(S.base, DIMS.manager.f);
+  const regions = distinct(S.base, DIMS.region.f);
+  const cur = S.me || {};
+  let h = '<div class="modal-h"><b>👤 选择身份 / 可见范围</b></div><div class="modal-b">';
+  h += '<div class="lbl">角色</div><div class="seg" id="id-role">' +
+    [["admin","管理员"],["region","大区"],["manager","经理"],["rep","代表"],["viewer","查看者"]].map(([r,n])=>'<button data-r="'+r+'" class="'+((cur.role||"admin")===r?"on":"")+'">'+n+'</button>').join("") + '</div>';
+  h += '<div id="id-name-box" style="margin-top:14px"></div>';
+  h += '<div id="id-pw-box" style="margin-top:10px"></div>';
+  h += '</div><div class="modal-f"><button class="btn" id="id-cancel">取消</button><button class="btn pri" id="id-ok">确定</button></div>';
+  openModal(h);
+
+  let role = cur.role || "admin";
+  let pick = { region:cur.region||"", manager:cur.manager||"", rep:cur.rep||"" };
+  let renderName = () => {
+    const box = $("#id-name-box");
+    if (role==="admin"||role==="viewer"){ box.innerHTML = '<div class="hint">'+(role==="admin"?"管理员可查看与编辑全部范围,并可导入数据、保存版本。":"查看者可浏览全部数据(只读),适合上级查看看板。")+'</div>'; return; }
+    const list = role==="region"?regions:role==="manager"?mgrs:reps;
+    const key = role;
+    const sel = pick[key];
+    let h2 = '<div class="lbl">选择'+(role==="region"?"大区":role==="manager"?"经理":"代表")+'</div>';
+    if (!list.length) h2 += '<div class="hint">暂无可选项,请先导入数据。</div>';
+    else h2 += '<div class="id-grid">' + list.map(n => '<div class="id-card'+(sel===n?" on":"")+'" data-n="'+esc(n)+'">'+esc(n)+'</div>').join("") + '</div>';
+    box.innerHTML = h2;
+    $$("#id-name-box .id-card").forEach(c => c.onclick = () => { pick[key]=c.dataset.n; renderName(); });
+  };
+  renderName();
+  $("#id-role").onclick = e => { const b=e.target.closest("button"); if(b){ role=b.dataset.r; $$("#id-role button").forEach(x=>x.classList.toggle("on",x.dataset.r===role)); renderName(); } };
+  $("#id-cancel").onclick = closeModal;
+  // 密码验证
+  let pwInput = null;
+  const renderPwBox = () => {
+    const meKey = role==="admin"?"admin:admin":role==="viewer"?"viewer:viewer":role==="region"?("region:"+pick.region):role==="manager"?("manager:"+pick.manager):role==="rep"?("rep:"+pick.rep):"";
+    const hasPw = meKey && S.passwords[meKey] && S.passwords[meKey].trim();
+    const box = $("#id-pw-box");
+    if (!box) return;
+    if (!hasPw){ box.innerHTML = '<div class="hint" style="color:var(--green)">✓ 该身份未设置密码，可直接切换</div>'; pwInput=null; return; }
+    box.innerHTML = '<div class="lbl" style="margin-top:10px">请输入密码</div><input class="ctrl" id="id-pw-inp" type="password" placeholder="密码" style="width:200px">';
+    pwInput = $("#id-pw-inp");
+  };
+  // 在名称选择后重新渲染密码框
+  const origRenderName = renderName;
+  renderName = () => { origRenderName(); renderPwBox(); };
+  
+  $("#id-ok").onclick = async () => {
+    const me = { role };
+    if (role==="region"){ if(!pick.region){ toast("请选择大区"); return; } me.region=pick.region; }
+    if (role==="manager"){ if(!pick.manager){ toast("请选择经理"); return; } me.manager=pick.manager; }
+    if (role==="rep"){ if(!pick.rep){ toast("请选择代表"); return; } me.rep=pick.rep; }
+    const meKey = role==="admin"?"admin:admin":role==="viewer"?"viewer:viewer":role==="region"?("region:"+pick.region):role==="manager"?("manager:"+pick.manager):role==="rep"?("rep:"+pick.rep):"";
+    if (meKey && S.passwords[meKey] && S.passwords[meKey].trim()){
+      const entered = pwInput ? pwInput.value.trim() : "";
+      if (entered !== S.passwords[meKey]){ toast("密码错误"); return; }
+    }
+    S.me = me; await Store.pset("zsr-me", me); closeModal();
+    toast("已切换:" + scopeLabel());
+    // 身份切换后更新管理后台标签可见性
+    const adminTab = document.querySelector('.tab[data-tab="admin"]');
+    if (adminTab) adminTab.style.display = isAdmin() ? "" : "none";
+    if (role==="viewer" && S.tab==="admin") switchTab("dash");
+    if (role!=="admin" && S.tab==="admin") switchTab("fill");
+    rerender();
+  };
+}
+function openHelp(){
+  let h = '<div class="modal-h"><b>📖 使用说明</b></div><div class="modal-b" style="line-height:1.85;font-size:13px">';
+  h += '<p><b>1. 导入数据(管理员)</b><br>在「管理后台」上传 Excel/CSV 或粘贴表格,字段含 大区/经理/代表/省份/医院名称/医院code/是否签约医院/产品/年化签约量/年化自由量。</p>';
+  h += '<p><b>2. 填写入院进度</b><br>「填写跟进」按医院×产品选择阶段:<br>· 未签约医院 6 步 —— 意向20% / 已试用40% / 已提单60% / 已过会80% / 已入院100% / 临采(单列标记)。<br>· 签约医院 2 步 —— 未上量 / 已上量(不显示百分比进度)。</p>';
+  h += '<p><b>3. 对比上个版本</b><br>管理员在后台「保存版本」后,填写页会按阶段自动标注:进度提高=<span class="cmp adv">有进展</span> · 不变=<span class="cmp keep">保持</span> · 下降=<span class="cmp back">倒退</span>(红字)。</p>';
+  h += '<p><b>4. 设备计划 / 卡点 / 备注</b><br>设备计划下拉:医院购买 / 代理商轮转 / 暂无设备;卡点与备注为自由文本。</p>';
+  h += '<p><b>5. 入院看板</b><br>可按 产品 / 省份 / 销售经理 / 销售大区 / 销售代表 查看入院进度与入院家数,并下钻筛选。</p>';
+  h += '<p style="color:var(--mute)">数据保存在本机浏览器;可在后台「导出数据包」备份或在团队间传递。</p>';
+  h += '</div><div class="modal-f"><button class="btn pri" id="help-ok">知道了</button></div>';
+  openModal(h); $("#help-ok").onclick = closeModal;
+}
+
+/* =================== 模态 / 切页 =================== */
+function openModal(html){ $("#modal").innerHTML = html; $("#mask").classList.add("show"); }
+function closeModal(){ $("#mask").classList.remove("show"); }
+function switchTab(t){
+  if (t==="admin" && !isAdmin()){ t = "fill"; }
+  S.tab = t;
+  $$(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab===t));
+  $("#tab-fill").style.display = t==="fill" ? "" : "none";
+  $("#tab-dash").style.display = t==="dash" ? "" : "none";
+  $("#tab-admin").style.display = t==="admin" ? "" : "none";
+  rerender();
+}
+function rerender(){
+  renderCtx();
+  if (S.tab==="fill") renderFill();
+  else if (S.tab==="dash") renderDash();
+  else renderAdmin();
+}
+
+/* =================== 可调列宽(参考预估收集) =================== */
+function initResizableTable(table, key){
+  if (!table || !table.tHead || !table.tHead.rows.length) return;
+  const ths = [...table.tHead.rows[0].cells];
+  if (!ths.length) return;
+  let cg = table.querySelector(":scope > colgroup.rz-cols");
+  if (!cg){ cg = document.createElement("colgroup"); cg.className="rz-cols"; ths.forEach(()=>cg.appendChild(document.createElement("col"))); table.insertBefore(cg, table.firstChild); }
+  const cols = [...cg.children];
+  S._colW = S._colW || {};
+  const saved = key ? (S._colW[key] = S._colW[key] || {}) : {};
+  const cid = i => ths[i].dataset.cid || ("c"+i);
+  const widths = ths.map(th => th.offsetWidth);
+  const initW = widths.slice();
+  let fixed = false;
+  const apply = () => { let tot=0; for(let i=0;i<cols.length;i++){ cols[i].style.width=widths[i]+"px"; tot+=widths[i]; } if(!fixed){ table.classList.add("rz-fixed"); fixed=true; } table.style.width=tot+"px"; };
+  let hasSaved=false; ths.forEach((th,i)=>{ const w=saved[cid(i)]; if(w){ widths[i]=w; hasSaved=true; } });
+  if (hasSaved) apply();
+  ths.forEach((th,i)=>{
+    if (th.querySelector(".resize-handle")) return;
+    const hd = document.createElement("div"); hd.className="resize-handle"; hd.setAttribute("draggable","false"); hd.title="拖拽调整列宽 · 双击恢复默认";
+    hd.addEventListener("click", e=>e.stopPropagation());
+    hd.addEventListener("dblclick", e=>{ e.stopPropagation(); widths[i]=initW[i]; delete saved[cid(i)]; apply(); });
+    hd.addEventListener("pointerdown", e=>{
+      e.preventDefault(); e.stopPropagation();
+      if (!fixed){ ths.forEach((t,j)=>{ if(!saved[cid(j)]) widths[j]=t.offsetWidth; }); }
+      apply(); hd.setPointerCapture(e.pointerId); hd.classList.add("dragging"); document.body.classList.add("col-resizing");
+      const sx=e.clientX, sw=widths[i]; const min = ths[i].classList.contains("stick1")?90:42; let raf=0, nx=sw;
+      const mv = ev => { nx=Math.max(min, sw+ev.clientX-sx); if(!raf) raf=requestAnimationFrame(()=>{ raf=0; if(widths[i]!==nx){ widths[i]=nx; apply(); } }); };
+      const up = () => { hd.removeEventListener("pointermove",mv); hd.removeEventListener("pointerup",up); hd.removeEventListener("pointercancel",up); if(raf){cancelAnimationFrame(raf);raf=0;} hd.classList.remove("dragging"); document.body.classList.remove("col-resizing"); widths[i]=nx; if(key) saved[cid(i)]=nx; apply(); };
+      hd.addEventListener("pointermove",mv); hd.addEventListener("pointerup",up); hd.addEventListener("pointercancel",up);
+    });
+    th.appendChild(hd);
+  });
+}
+
+/* =================== 启动 =================== */
+async function boot(){
+  await Store.init();
+  $("#sync-badge").textContent = Store.shared ? "共享模式" : (Store.ls ? "本地模式" : "临时模式");
+  if (Store.shared) $("#sync-badge").classList.add("live");
+  await loadAll();
+  if (!S.me){ S.me = { role:"admin" }; await Store.pset("zsr-me", S.me); }
+
+  // 非管理员隐藏管理后台标签
+  if (!isAdmin()){
+    const adminTab = document.querySelector('.tab[data-tab="admin"]');
+    if (adminTab) adminTab.style.display = "none";
+  }
+
+  $$(".tab").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+  $("#btn-me").onclick = openIdentity;
+  $("#btn-help").onclick = openHelp;
+  $("#btn-refresh").onclick = () => location.reload();
+  $("#mask").onclick = e => { if (e.target===$("#mask")) closeModal(); };
+  $("#file-xlsx").onchange = e => { const f=e.target.files[0]; if(f) handleXlsxFile(f); e.target.value=""; };
+
+  switchTab("fill");
+}
+boot();
+</script>
+</body>
+</html>
