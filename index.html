@@ -429,16 +429,44 @@ function samplePrevVersion(){
 }
 
 /* =================== 数据读写 =================== */
+async function loadDataJson(){
+  try {
+    const url = new URL('data.json', location.href);
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const d = await r.json();
+    if (!d) return null;
+    // 支持两种格式: 简单 { rows, meta } / 完整导出包 { base, baseMeta, fill, ... }
+    let rows = null, meta = null, fill = null, versions = null, passwords = null;
+    if (Array.isArray(d.rows)) { rows = d.rows; meta = d.meta; }
+    else if (Array.isArray(d.base)) { rows = d.base; meta = d.baseMeta; fill = d.fill; versions = d.versions; passwords = d.passwords; }
+    if (!rows || !rows.length) return null;
+    return { rows, meta, fill, versions, passwords };
+  } catch(e) { return null; }
+}
+
 async function loadAll(){
-  const base = await Store.get("zsr-base");
-  if (base && base.rows){ S.base = base.rows; S.baseMeta = base.meta || null; }
-  S.fill = (await Store.get("zsr-fill")) || {};
-  S.versions = (await Store.get("zsr-versions")) || [];
-  S.passwords = (await Store.get("zsr-passwords")) || {};
+  // 1. 优先尝试从同目录 data.json 加载（GitHub Pages / 服务器部署）
+  const remote = await loadDataJson();
+  const hasRemote = !!(remote && remote.rows && remote.rows.length);
+  if (hasRemote){
+    S.base = remote.rows;
+    S.baseMeta = remote.meta || { importedAt:Date.now(), count:remote.rows.length, source:"data.json" };
+  }
+  
+  // 2. 回退到 localStorage / 共享存储
+  if (!S.base.length){
+    const base = await Store.get("zsr-base");
+    if (base && base.rows){ S.base = base.rows; S.baseMeta = base.meta || null; }
+  }
+  
+  S.fill = (await Store.get("zsr-fill")) || (hasRemote && remote.fill) || {};
+  S.versions = (await Store.get("zsr-versions")) || (hasRemote && remote.versions) || [];
+  S.passwords = (await Store.get("zsr-passwords")) || (hasRemote && remote.passwords) || {};
   S.fillColVis = (await Store.get("zsr-colvis")) || S.fillColVis;
   S.me = await Store.pget("zsr-me");
   // 首次运行: 载入示例
-  if (!S.base.length && !base){
+  if (!S.base.length && !hasRemote){
     S.base = sampleBase();
     S.baseMeta = { importedAt:Date.now(), count:S.base.length, sample:true };
     S.fill = sampleFill(S.base);
